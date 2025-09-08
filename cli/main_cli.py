@@ -155,7 +155,7 @@ def parse_arguments():
 
 
 async def run_direct_processing(app: CLIApp, input_source: str, input_type: str):
-    """直接处理模式（非交互式）"""
+    """Direct processing mode (non-interactive)"""
     try:
         print(
             f"\n{Colors.BOLD}{Colors.CYAN}🚀 Starting direct processing mode...{Colors.ENDC}"
@@ -166,7 +166,7 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
             f"{Colors.CYAN}Mode: {'🧠 Comprehensive' if app.cli.enable_indexing else '⚡ Optimized'}{Colors.ENDC}"
         )
 
-        # 初始化应用
+        # Initialize application
         init_result = await app.initialize_mcp_app()
         if init_result["status"] != "success":
             print(
@@ -174,7 +174,7 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
             )
             return False
 
-        # 处理输入
+        # Process input
         result = await app.process_input(input_source, input_type)
 
         if result["status"] == "success":
@@ -196,14 +196,14 @@ async def run_direct_processing(app: CLIApp, input_source: str, input_type: str)
 
 
 async def main():
-    """主函数"""
-    # 解析命令行参数
+    """Main function"""
+    # Parse command line arguments
     args = parse_arguments()
 
-    # 显示横幅
+    # Display banner
     print_enhanced_banner()
 
-    # 检查环境
+    # Check environment
     if not check_environment():
         print(
             f"\n{Colors.FAIL}🚨 Environment check failed. Please fix the issues and try again.{Colors.ENDC}"
@@ -211,10 +211,10 @@ async def main():
         sys.exit(1)
 
     try:
-        # 创建CLI应用
+        # Create CLI application
         app = CLIApp()
 
-        # 设置配置
+        # Set configuration
         if args.optimized:
             app.cli.enable_indexing = False
             print(
@@ -243,10 +243,10 @@ async def main():
                 "size_threshold_chars": args.segmentation_threshold,
             }
 
-        # 检查是否为直接处理模式
+        # Check if in direct processing mode
         if args.file or args.url or args.chat:
             if args.file:
-                # 验证文件存在
+                # Verify file exists
                 if not os.path.exists(args.file):
                     print(f"{Colors.FAIL}❌ File not found: {args.file}{Colors.ENDC}")
                     sys.exit(1)
@@ -254,7 +254,7 @@ async def main():
             elif args.url:
                 success = await run_direct_processing(app, args.url, "url")
             elif args.chat:
-                # 验证chat输入长度
+                # Verify chat input length
                 if len(args.chat.strip()) < 20:
                     print(
                         f"{Colors.FAIL}❌ Chat input too short. Please provide more detailed requirements (at least 20 characters){Colors.ENDC}"
@@ -264,7 +264,7 @@ async def main():
 
             sys.exit(0 if success else 1)
         else:
-            # 交互式模式
+            # Interactive mode
             print(f"\n{Colors.CYAN}🎮 Starting interactive mode...{Colors.ENDC}")
             await app.run_interactive_session()
 

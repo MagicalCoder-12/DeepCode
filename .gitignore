@@ -25,7 +25,7 @@ site/
 *.log.*
 *.logfire
 *.coverage/
-logs/
+log/
 
 # Caches
 .cache/
@@ -51,12 +51,16 @@ rag_storage/
 examples/input/
 examples/output/
 deepcode-mcp/agent_folders
-
+deepcode_lab/
 # Miscellaneous
 .DS_Store
 TODO.md
 ignore_this.txt
 *.ignore.*
+
+# Document files
+*.pdf
+*.txt
 
 # unit-test files
 test_*
@@ -64,3 +68,11 @@ run_indexer_with_filtering.py
 
 # Cline files
 memory-bank/
+.clinerules/byterover-rules.md
+.kilocode/rules/byterover-rules.md
+.roo/rules/byterover-rules.md
+.windsurf/rules/byterover-rules.md
+.cursor/rules/byterover-rules.mdc
+.kiro/steering/byterover-rules.md
+.qoder/rules/byterover-rules.md
+.augment/rules/byterover-rules.md

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 DeepCode - CLI Research Engine Launcher
-DeepCode - CLI研究引擎启动器
 
 🧬 Open-Source Code Agent by Data Intelligence Lab @ HKU (CLI Edition)
 ⚡ Revolutionizing research reproducibility through collaborative AI via command line
@@ -12,7 +11,7 @@ from pathlib import Path
 
 
 def check_dependencies():
-    """检查必要的依赖是否已安装 / Check if necessary dependencies are installed"""
+    """Check if necessary dependencies are installed"""
     import importlib.util
 
     print("🔍 Checking CLI dependencies...")
@@ -44,7 +43,6 @@ def check_dependencies():
         missing_deps.append("mcp-agent")
 
     # Check for workflow dependencies
-    # 添加项目根目录到路径
     current_dir = Path(__file__).parent
     project_root = current_dir.parent
     if str(project_root) not in sys.path:
@@ -81,7 +79,7 @@ def check_dependencies():
 
 
 def print_banner():
-    """显示CLI启动横幅 / Display CLI startup banner"""
+    """ Display CLI startup banner"""
     banner = """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
@@ -97,15 +95,15 @@ def print_banner():
 
 
 def main():
-    """主函数 / Main function"""
+    """ Main function"""
     print_banner()
 
-    # 检查依赖 / Check dependencies
+    #  Check dependencies
     if not check_dependencies():
         print("\n🚨 Please install missing dependencies and try again.")
         sys.exit(1)
 
-    # 获取当前脚本目录 / Get current script directory
+    #  Get current script directory
     current_dir = Path(__file__).parent
     project_root = current_dir.parent
     cli_app_path = current_dir / "cli_app.py"

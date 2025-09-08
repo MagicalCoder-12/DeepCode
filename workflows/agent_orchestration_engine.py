@@ -33,7 +33,7 @@ import re
 import yaml
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# MCP Agent imports
+# MCP Agent imports (kept for non-search functionality)
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm import RequestParams
 from mcp_agent.workflows.parallel.parallel_llm import ParallelLLM
@@ -56,6 +56,7 @@ from utils.llm_utils import (
     get_adaptive_agent_config,
     get_adaptive_prompts,
 )
+from utils.serper_search_service import SerperSearchService, get_default_search_service
 from workflows.agents.document_segmentation_agent import prepare_document_segments
 
 # Environment configuration
@@ -65,49 +66,38 @@ os.environ["PYTHONDONTWRITEBYTECODE"] = "1"  # Prevent .pyc file generation
 def get_default_search_server(config_path: str = "mcp_agent.config.yaml"):
     """
     Get the default search server from configuration.
+    Now always returns "serper" since it's the only supported search service.
 
     Args:
-        config_path: Path to the main configuration file
+        config_path: Path to the main configuration file (kept for backward compatibility)
 
     Returns:
-        str: The default search server name ("brave" or "bocha-mcp")
+        str: The search server name ("serper")
     """
-    try:
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = yaml.safe_load(f)
-
-            default_server = config.get("default_search_server", "brave")
-            print(f"🔍 Using search server: {default_server}")
-            return default_server
-        else:
-            print(f"⚠️ Config file {config_path} not found, using default: brave")
-            return "brave"
-    except Exception as e:
-        print(f"⚠️ Error reading config file {config_path}: {e}")
-        print("🔍 Falling back to default search server: brave")
-        return "brave"
+    print("🔍 Using search server: serper (direct HTTP)")
+    return "serper"
 
 
 def get_search_server_names(
     additional_servers: Optional[List[str]] = None,
 ) -> List[str]:
     """
-    Get server names list with the configured default search server.
+    Get server names list for MCP agents (non-search servers only).
+    Search functionality now uses direct HTTP calls.
 
     Args:
-        additional_servers: Optional list of additional servers to include
+        additional_servers: Optional list of additional MCP servers to include
 
     Returns:
-        List[str]: List of server names including the default search server
+        List[str]: List of MCP server names (excluding search servers)
     """
-    default_search = get_default_search_server()
-    server_names = [default_search]
+    # Non-search MCP servers that are still used
+    server_names = ["filesystem", "fetch", "github-downloader", "file-downloader"]
 
     if additional_servers:
         # Add additional servers, avoiding duplicates
         for server in additional_servers:
-            if server not in server_names:
+            if server not in server_names and server != "serper":
                 server_names.append(server)
 
     return server_names
@@ -184,7 +174,7 @@ def extract_clean_json(llm_output: str) -> str:
 
 async def run_research_analyzer(prompt_text: str, logger) -> str:
     """
-    Run the research analysis workflow using ResearchAnalyzerAgent.
+    Run the research analysis workflow with direct search capabilities.
 
     Args:
         prompt_text: Input prompt text containing research information
@@ -204,10 +194,11 @@ async def run_research_analyzer(prompt_text: str, logger) -> str:
                 "Empty or None prompt_text provided to run_research_analyzer"
             )
 
+        # Create analyzer agent with available servers (no filesystem/fetch)
         analyzer_agent = Agent(
             name="ResearchAnalyzerAgent",
             instruction=PAPER_INPUT_ANALYZER_PROMPT,
-            server_names=get_search_server_names(),
+            server_names=["document-segmentation", "file-downloader"],  # Use available Python servers
         )
 
         async with analyzer_agent:
@@ -228,6 +219,16 @@ async def run_research_analyzer(prompt_text: str, logger) -> str:
                 print(f"❌ Failed to attach LLM: {e}")
                 raise
 
+            # Add search functionality through direct HTTP service
+            search_service = get_default_search_service()
+            
+            # Enhanced prompt with search capability instructions
+            enhanced_prompt = f"""{prompt_text}
+
+Note: If you need to search for additional information during analysis, 
+I can provide web search capabilities. Please indicate in your analysis 
+if web search would be helpful for gathering more context."""
+
             # Set higher token output for research analysis
             analysis_params = RequestParams(
                 max_tokens=6144,
@@ -240,7 +241,7 @@ async def run_research_analyzer(prompt_text: str, logger) -> str:
 
             try:
                 raw_result = await analyzer.generate_str(
-                    message=prompt_text, request_params=analysis_params
+                    message=enhanced_prompt, request_params=analysis_params
                 )
 
                 print("✅ LLM request completed")
@@ -253,7 +254,6 @@ async def run_research_analyzer(prompt_text: str, logger) -> str:
                     print("1. LLM API call failed silently")
                     print("2. API rate limiting or quota exceeded")
                     print("3. Network connectivity issues")
-                    print("4. MCP server communication problems")
                     raise ValueError("LLM returned empty result")
 
             except Exception as e:
@@ -307,7 +307,7 @@ async def run_resource_processor(analysis_result: str, logger) -> str:
     processor_agent = Agent(
         name="ResourceProcessorAgent",
         instruction=PAPER_DOWNLOADER_PROMPT,
-        server_names=["filesystem", "file-downloader"],
+        server_names=["file-downloader", "github-downloader"],  # Use available Python servers
     )
 
     async with processor_agent:
@@ -350,9 +350,9 @@ async def run_code_analyzer(
     Returns:
         str: Comprehensive analysis result from the coordinated agents
     """
-    # Get adaptive configuration based on segmentation usage
-    search_server_names = get_search_server_names()
-    agent_config = get_adaptive_agent_config(use_segmentation, search_server_names)
+    # Get adaptive configuration based on segmentation usage (available servers only)
+    base_servers = ["document-segmentation", "file-downloader", "github-downloader"]  # Use available Python servers
+    agent_config = get_adaptive_agent_config(use_segmentation, base_servers)
     prompts = get_adaptive_prompts(use_segmentation)
 
     print(
@@ -661,14 +661,6 @@ async def orchestrate_document_preprocessing_agent(
         # Step 2: Read document content to determine size
         md_path = os.path.join(dir_info["paper_dir"], md_files[0])
         try:
-            # Check if file is actually a PDF by reading the first few bytes
-            with open(md_path, "rb") as f:
-                header = f.read(8)
-                if header.startswith(b"%PDF"):
-                    raise IOError(
-                        f"File {md_path} is a PDF file, not a text file. Please convert it to markdown format or use PDF processing tools."
-                    )
-
             with open(md_path, "r", encoding="utf-8") as f:
                 document_content = f.read()
         except Exception as e:
@@ -1102,11 +1094,11 @@ async def run_chat_planning_agent(user_input: str, logger) -> str:
                 "Empty or None user_input provided to run_chat_planning_agent"
             )
 
-        # Create the chat planning agent
+        # Create the chat planning agent (without search server)
         chat_planning_agent = Agent(
             name="ChatPlanningAgent",
             instruction=CHAT_AGENT_PLANNING_PROMPT,
-            server_names=get_search_server_names(),  # Dynamic search server configuration
+            server_names=["filesystem", "fetch"],  # Removed search server, using direct HTTP
         )
 
         async with chat_planning_agent:

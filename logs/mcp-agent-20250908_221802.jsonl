@@ -1,0 +1,23 @@
+{"level":"INFO","timestamp":"2025-09-08T22:18:02.375621","namespace":"mcp_agent.core.context","message":"Configuring logger with level: info"}
+{"level":"INFO","timestamp":"2025-09-08T22:18:02.383213","namespace":"mcp_agent.paper_to_code","message":"Loading subagents from configuration..."}
+{"level":"INFO","timestamp":"2025-09-08T22:18:02.384289","namespace":"mcp_agent.paper_to_code","message":"MCPApp initialized","data":{"data":{"progress_action":"Running","target":"paper_to_code","agent_name":"mcp_application_loop","session_id":"1a44f8fa-56e9-4e95-9770-161d42a97119"}}}
+{"level":"ERROR","timestamp":"2025-09-08T22:18:03.325899","namespace":"mcp_agent.mcp.mcp_aggregator.ChatPlanningAgent","message":"Error loading server data: Server 'filesystem' not found in registry.. Attempting to continue"}
+{"level":"ERROR","timestamp":"2025-09-08T22:18:03.325947","namespace":"mcp_agent.mcp.mcp_aggregator.ChatPlanningAgent","message":"Error loading server data: Server 'fetch' not found in registry.. Attempting to continue"}
+{"level":"INFO","timestamp":"2025-09-08T22:18:29.348341","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"Disconnecting all persistent server connections..."}
+ersistent connections..."}
+{"level":"INFO","timestamp":"2025-09-08T22:18:29.348564","namespace":"mcp_agent.tracing.token_counter","message":"Model qwen2.5:7b (provider=OpenAI) not found in costs, using default estimate"}
+{"level":"INFO","timestamp":"2025-09-08T22:18:29.348859","namespace":"mcp_agent.mcp.mcp_aggregator.ChatPlanningAgent","message":"Connection manager successfully closed and removed from context"}
+{"level":"INFO","timestamp":"2025-09-08T22:18:43.621913","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"command-executor: Up and running with a persistent connection!"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:11.269342","namespace":"mcp_agent.tracing.token_counter","message":"Model qwen2.5:7b (provider=OpenAI) not found in costs, using default estimate"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:11.269662","namespace":"mcp_agent.mcp.mcp_aggregator.StructureGeneratorAgent","message":"Requesting tool call","data":{"data":{"progress_action":"Calling Tool","tool_name":"execute_commands","server_name":"command-executor","agent_name":"StructureGeneratorAgent"}}}
+{"level":"INFO","timestamp":"2025-09-08T22:19:42.245812","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"Disconnecting all persistent server connections..."}
+ all persistent connections..."}
+{"level":"INFO","timestamp":"2025-09-08T22:19:42.245911","namespace":"mcp_agent.tracing.token_counter","message":"Model qwen2.5:7b (provider=OpenAI) not found in costs, using default estimate"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:42.246071","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"command-executor: Requesting shutdown..."}
+{"level":"INFO","timestamp":"2025-09-08T22:19:42.452080","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"All persistent server connections signaled to disconnect."}
+moved from context"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:43.633470","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"code-implementation: Up and running with a persistent connection!"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:43.633979","namespace":"mcp_agent.mcp.mcp_connection_manager","message":"code-reference-indexer: Up and running with a persistent connection!"}
+{"level":"INFO","timestamp":"2025-09-08T22:19:44.413055","namespace":"mcp_agent.mcp.mcp_aggregator.CodeImplementationAgent","message":"Requesting tool call","data":{"data":{"progress_action":"Calling Tool","tool_name":"set_workspace","server_name":"code-implementation","agent_name":"CodeImplementationAgent"}}}
+{"level":"INFO","timestamp":"2025-09-08T22:19:47.585407","namespace":"mcp_agent.mcp.mcp_aggregator.CodeImplementationAgent","message":"Requesting tool call","data":{"data":{"progress_action":"Calling Tool","tool_name":"read_code_mem","server_name":"code-implementation","agent_name":"CodeImplementationAgent"}}}
+{"level":"INFO","timestamp":"2025-09-08T22:19:50.541126","namespace":"mcp_agent.mcp.mcp_aggregator.CodeImplementationAgent","message":"Requesting tool call","data":{"data":{"progress_action":"Calling Tool","tool_name":"execute_bash","server_name":"code-implementation","agent_name":"CodeImplementationAgent"}}}

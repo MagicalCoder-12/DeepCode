@@ -1,11 +1,11 @@
 """
 CLI Module for DeepCode Agent
-DeepCode智能体CLI模块
+DeepCode Agent CLI Module
 
-包含以下组件 / Contains the following components:
-- cli_app: CLI应用主程序 / CLI application main program
-- cli_interface: CLI界面组件 / CLI interface components
-- cli_launcher: CLI启动器 / CLI launcher
+Contains the following components:
+- cli_app: CLI application main program
+- cli_interface: CLI interface components  
+- cli_launcher: CLI launcher
 """
 
 __version__ = "1.0.0"

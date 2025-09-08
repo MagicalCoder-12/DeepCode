@@ -1527,9 +1527,22 @@ async def analyze_and_segment_document(
                 except Exception as e:
                     pass
 
-        # Read document content
-        with open(md_file_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Read document content with encoding detection
+        content = None
+        encodings_to_try = ['utf-8', 'utf-8-sig', 'latin1', 'cp1252', 'ascii']
+        
+        for encoding in encodings_to_try:
+            try:
+                with open(md_file_path, "r", encoding=encoding) as f:
+                    content = f.read()
+                break  # Successfully read with this encoding
+            except UnicodeDecodeError:
+                continue
+        
+        if content is None:
+            # Last resort: read with error replacement
+            with open(md_file_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
 
         # Analyze document
         analyzer = DocumentAnalyzer()

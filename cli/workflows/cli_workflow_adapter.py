@@ -1,6 +1,6 @@
 """
 CLI Workflow Adapter for Agent Orchestration Engine
-CLI工作流适配器 - 智能体编排引擎
+CLI Workflow Adapter - Agent Orchestration Engine
 
 This adapter provides CLI-optimized interface to the latest agent orchestration engine,
 with enhanced progress reporting, error handling, and CLI-specific optimizations.

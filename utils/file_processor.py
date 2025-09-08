@@ -43,7 +43,7 @@ class FileProcessor:
                 try:
                     info_dict = json.loads(file_info)
                 except json.JSONDecodeError:
-                    # 尝试从文本中提取JSON
+                    # Try to extract JSON from text
                     info_dict = FileProcessor.extract_json_from_text(file_info)
                     if not info_dict:
                         # If not JSON and doesn't look like a file path, raise error
@@ -170,7 +170,7 @@ class FileProcessor:
     @staticmethod
     async def read_file_content(file_path: str) -> str:
         """
-        Read the content of a file asynchronously.
+        Read the content of a file asynchronously with automatic encoding detection.
 
         Args:
             file_path: Path to the file to read
@@ -187,27 +187,113 @@ class FileProcessor:
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"File not found: {file_path}")
 
-            # Check if file is actually a PDF by reading the first few bytes
+            # Check if the file is actually a PDF (regardless of extension)
             with open(file_path, "rb") as f:
-                header = f.read(8)
-                if header.startswith(b"%PDF"):
-                    raise IOError(
-                        f"File {file_path} is a PDF file, not a text file. Please convert it to markdown format or use PDF processing tools."
-                    )
+                header = f.read(10)
+                if header.startswith(b'%PDF'):
+                    print(f"🔍 Detected PDF file disguised as {os.path.splitext(file_path)[1]}: {file_path}")
+                    # Return a helpful markdown content explaining the situation
+                    file_size = os.path.getsize(file_path)
+                    return f"""# PDF Document Detected
 
-            # Read file content
-            # Note: Using async with would be better for large files
-            # but for simplicity and compatibility, using regular file reading
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
+**File**: {os.path.basename(file_path)}
+**Size**: {file_size:,} bytes ({file_size/1024/1024:.2f} MB)
+**Type**: PDF Document
 
-            return content
+## Issue
+This file is a PDF document that was incorrectly saved with a .md extension.
 
-        except UnicodeDecodeError as e:
-            raise IOError(
-                f"Error reading file {file_path}: File encoding is not UTF-8. Original error: {str(e)}"
-            )
+## Solutions
+1. **Rename the file**: Change the extension from .md to .pdf
+2. **Use a PDF reader**: Open the file with a PDF viewer
+3. **Convert to text**: Use a PDF-to-text converter
+
+## For DeepCode Processing
+To process this PDF with DeepCode:
+1. Rename the file to have a .pdf extension
+2. Upload it again - DeepCode will automatically extract and convert the content
+
+---
+*Auto-detected by DeepCode Encoding System*
+*Respecting your local development privacy preferences*
+"""
+
+            # Try to detect encoding first
+            detected_encoding = None
+            try:
+                import chardet
+                with open(file_path, "rb") as f:
+                    raw_data = f.read(10000)  # Read first 10KB for detection
+                    result = chardet.detect(raw_data)
+                    detected_encoding = result.get('encoding')
+                    confidence = result.get('confidence', 0)
+                    
+                    # Only use detected encoding if confidence is high enough
+                    if confidence < 0.7:
+                        detected_encoding = None
+            except ImportError:
+                # chardet not available, will use fallback method
+                pass
+            except Exception:
+                # Detection failed, will use fallback method
+                detected_encoding = None
+
+            # List of encodings to try in order
+            encodings_to_try = []
+            if detected_encoding:
+                encodings_to_try.append(detected_encoding)
+            
+            # Add common encodings as fallbacks
+            encodings_to_try.extend([
+                'utf-8',
+                'utf-8-sig',  # UTF-8 with BOM
+                'latin1',     # ISO-8859-1
+                'cp1252',     # Windows-1252
+                'ascii',
+                'utf-16',
+                'utf-32'
+            ])
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_encodings = []
+            for enc in encodings_to_try:
+                if enc and enc.lower() not in seen:
+                    unique_encodings.append(enc)
+                    seen.add(enc.lower())
+
+            # Try each encoding until one works
+            last_error = None
+            for encoding in unique_encodings:
+                try:
+                    with open(file_path, "r", encoding=encoding) as f:
+                        content = f.read()
+                    
+                    # Successful read
+                    if detected_encoding and encoding != detected_encoding:
+                        print(f"Note: File {file_path} read with {encoding} encoding (detected: {detected_encoding})")
+                    
+                    return content
+                    
+                except UnicodeDecodeError as e:
+                    last_error = e
+                    continue
+                except Exception as e:
+                    last_error = e
+                    continue
+            
+            # If all encodings failed, try reading as binary and handling errors
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+                print(f"Warning: File {file_path} contains invalid UTF-8 characters, some may be replaced with �")
+                return content
+            except Exception as e:
+                raise IOError(f"Error reading file {file_path}: Could not decode with any encoding. Last error: {str(last_error)}")
+
         except Exception as e:
+            if isinstance(e, (FileNotFoundError, IOError)):
+                raise
             raise IOError(f"Error reading file {file_path}: {str(e)}")
 
     @staticmethod
@@ -278,7 +364,7 @@ class FileProcessor:
             Dict: The structured content with sections and standardized text
         """
         try:
-            # 首先尝试从字符串中提取markdown文件路径
+            # First try to extract markdown file path from string
             if isinstance(file_input, str):
                 import re
 
@@ -298,7 +384,7 @@ class FileProcessor:
                 else:
                     # Extract the relative part and combine with base_dir
                     paper_name = os.path.basename(paper_dir)
-                    # 保持原始目录名不变，不做任何替换
+                    # Keep original directory name unchanged, no replacements
                     paper_dir = os.path.join(base_dir, "papers", paper_name)
 
                 # Ensure the directory exists
@@ -310,12 +396,12 @@ class FileProcessor:
             # Get the actual file path
             file_path = None
             if isinstance(file_input, str):
-                # 尝试解析为JSON（处理下载结果）
+                # Try to parse as JSON (handle download results)
                 try:
                     parsed_json = json.loads(file_input)
                     if isinstance(parsed_json, dict) and "paper_path" in parsed_json:
                         file_path = parsed_json.get("paper_path")
-                        # 如果文件不存在，尝试查找markdown文件
+                        # If file doesn't exist, try to find markdown file
                         if file_path and not os.path.exists(file_path):
                             paper_dir = os.path.dirname(file_path)
                             if os.path.isdir(paper_dir):
@@ -327,11 +413,11 @@ class FileProcessor:
                     else:
                         raise ValueError("Invalid JSON format: missing paper_path")
                 except json.JSONDecodeError:
-                    # 尝试从文本中提取JSON（处理包含额外文本的下载结果）
+                    # Try to extract JSON from text (handle download results with extra text)
                     extracted_json = cls.extract_json_from_text(file_input)
                     if extracted_json and "paper_path" in extracted_json:
                         file_path = extracted_json.get("paper_path")
-                        # 如果文件不存在，尝试查找markdown文件
+                        # If file doesn't exist, try to find markdown file
                         if file_path and not os.path.exists(file_path):
                             paper_dir = os.path.dirname(file_path)
                             if os.path.isdir(paper_dir):
@@ -341,7 +427,7 @@ class FileProcessor:
                                         f"No markdown file found in directory: {paper_dir}"
                                     )
                     else:
-                        # 不是JSON，按文件路径处理
+                        # Not JSON, handle as file path
                         # Check if it's a file path (existing or not)
                         if file_input.endswith(
                             (".md", ".pdf", ".txt", ".docx", ".doc", ".html", ".htm")

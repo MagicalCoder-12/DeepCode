@@ -1,18 +1,18 @@
 """
 Prompt templates for the DeepCode agent system.
 
-RECENT UPDATES (针对论文代码复现优化):
-1. 简化并优化了文件结构生成逻辑，确保结构简洁且富有逻辑性
-2. 明确标识需要复现的核心文件和组件，由LLM智能判断优先级
-3. 优化了多agent协作的信息总结效率，减少冗余信息传递
-4. 移除了时间线等次要信息，专注于高质量代码复现
-5. 保持prompt完整性的同时提高了简洁性和可理解性
-6. 采用更清晰的结构化格式，便于LLM理解和执行
+RECENT UPDATES (Optimized for paper code reproduction):
+1. Simplified and optimized file structure generation logic to ensure concise and logical structure
+2. Clearly identifies core files and components that need to be reproduced, with LLM intelligently determining priority
+3. Optimized information summarization efficiency for multi-agent collaboration, reducing redundant information transfer
+4. Removed secondary information such as timelines, focusing on high-quality code reproduction
+5. Maintained prompt integrity while improving conciseness and comprehensibility
+6. Adopted a clearer structured format for easier LLM understanding and execution
 
-核心改进：
-- PAPER_ALGORITHM_ANALYSIS_PROMPT: 专注算法提取，明确实现优先级
-- PAPER_CONCEPT_ANALYSIS_PROMPT: 专注系统架构，突出概念到代码的映射
-- CODE_PLANNING_PROMPT: 整合前两者输出，生成高质量复现计划
+Core improvements:
+- PAPER_ALGORITHM_ANALYSIS_PROMPT: Focuses on algorithm extraction, clarifying implementation priorities
+- PAPER_CONCEPT_ANALYSIS_PROMPT: Focuses on system architecture, highlighting concept-to-code mapping
+- CODE_PLANNING_PROMPT: Integrates outputs from the previous two to generate high-quality reproduction plans
 """
 
 # Paper to Code Workflow Prompts
@@ -63,8 +63,6 @@ PAPER_DOWNLOADER_PROMPT = """You are a precise paper downloader that processes i
 Task: Handle paper according to input type and save to "./deepcode_lab/papers/id/id.md"
 Note: Generate id (id is a number) by counting files in "./deepcode_lab/papers/" directory and increment by 1.
 
-CRITICAL RULE: NEVER use write_file tool to create paper content directly. Always use file-downloader tools for PDF/document conversion.
-
 Processing Rules:
 1. URL Input (input_type = "url"):
    - Use "file-downloader" tool to download paper
@@ -72,9 +70,8 @@ Processing Rules:
    - Return saved file path and metadata
 
 2. File Input (input_type = "file"):
-   - Move file to "./deepcode_lab/papers/id/" using move_file_to tool
-   - The move_file_to tool will automatically convert PDF/documents to .md format
-   - NEVER manually extract content or use write_file - let the conversion tools handle this
+   - Move file to "./deepcode_lab/papers/id/"
+   - Use "file-downloader" tool to convert to .md format
    - Return new saved file path and metadata
 
 3. Directory Input (input_type = "directory"):

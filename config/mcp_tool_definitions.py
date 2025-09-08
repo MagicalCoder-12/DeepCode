@@ -1,42 +1,37 @@
 """
-MCP工具定义配置模块
 MCP Tool Definitions Configuration Module
 
-将工具定义从主程序逻辑中分离，提供标准化的工具定义格式
 Separate tool definitions from main program logic, providing standardized tool definition format
 
-支持的工具类型：
-- 文件操作工具 (File Operations)
-- 代码执行工具 (Code Execution)
-- 搜索工具 (Search Tools)
-- 项目结构工具 (Project Structure Tools)
+Supported Tool Types:
+- File Operations
+- Code Execution
+- Search Tools
+- Project Structure Tools
 """
 
 from typing import Dict, List, Any
 
 
 class MCPToolDefinitions:
-    """MCP工具定义管理器"""
+    """MCP Tool Definitions Manager"""
 
     @staticmethod
     def get_code_implementation_tools() -> List[Dict[str, Any]]:
         """
-        获取代码实现相关的工具定义
         Get tool definitions for code implementation
         """
         return [
             MCPToolDefinitions._get_read_file_tool(),
-            MCPToolDefinitions._get_read_multiple_files_tool(),
             MCPToolDefinitions._get_read_code_mem_tool(),
             MCPToolDefinitions._get_write_file_tool(),
-            MCPToolDefinitions._get_write_multiple_files_tool(),
             MCPToolDefinitions._get_execute_python_tool(),
             MCPToolDefinitions._get_execute_bash_tool(),
         ]
 
     @staticmethod
     def _get_read_file_tool() -> Dict[str, Any]:
-        """读取文件工具定义"""
+        """Read file tool definition"""
         return {
             "name": "read_file",
             "description": "Read file content, supports specifying line number range",
@@ -61,31 +56,6 @@ class MCPToolDefinitions:
         }
 
     @staticmethod
-    def _get_read_multiple_files_tool() -> Dict[str, Any]:
-        """批量读取多个文件工具定义"""
-        return {
-            "name": "read_multiple_files",
-            "description": "Read multiple files in a single operation (for batch reading)",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "file_requests": {
-                        "type": "string",
-                        "description": 'JSON string with file requests, e.g., \'{"file1.py": {}, "file2.py": {"start_line": 1, "end_line": 10}}\' or simple array \'["file1.py", "file2.py"]\'',
-                    },
-                    "max_files": {
-                        "type": "integer",
-                        "description": "Maximum number of files to read in one operation",
-                        "default": 5,
-                        "minimum": 1,
-                        "maximum": 10,
-                    },
-                },
-                "required": ["file_requests"],
-            },
-        }
-
-    @staticmethod
     def _get_read_code_mem_tool() -> Dict[str, Any]:
         """Read code memory tool definition - reads from implement_code_summary.md"""
         return {
@@ -106,7 +76,7 @@ class MCPToolDefinitions:
 
     @staticmethod
     def _get_write_file_tool() -> Dict[str, Any]:
-        """写入文件工具定义"""
+        """Write file tool definition"""
         return {
             "name": "write_file",
             "description": "Write content to file",
@@ -137,43 +107,8 @@ class MCPToolDefinitions:
         }
 
     @staticmethod
-    def _get_write_multiple_files_tool() -> Dict[str, Any]:
-        """批量写入多个文件工具定义"""
-        return {
-            "name": "write_multiple_files",
-            "description": "Write multiple files in a single operation (for batch implementation)",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "file_implementations": {
-                        "type": "string",
-                        "description": 'JSON string mapping file paths to content, e.g., \'{"file1.py": "content1", "file2.py": "content2"}\'',
-                    },
-                    "create_dirs": {
-                        "type": "boolean",
-                        "description": "Whether to create directories if they don't exist",
-                        "default": True,
-                    },
-                    "create_backup": {
-                        "type": "boolean",
-                        "description": "Whether to create backup files if they already exist",
-                        "default": False,
-                    },
-                    "max_files": {
-                        "type": "integer",
-                        "description": "Maximum number of files to write in one operation",
-                        "default": 5,
-                        "minimum": 1,
-                        "maximum": 10,
-                    },
-                },
-                "required": ["file_implementations"],
-            },
-        }
-
-    @staticmethod
     def _get_execute_python_tool() -> Dict[str, Any]:
-        """Python执行工具定义"""
+        """Python execution tool definition"""
         return {
             "name": "execute_python",
             "description": "Execute Python code and return output",
@@ -193,7 +128,7 @@ class MCPToolDefinitions:
 
     @staticmethod
     def _get_execute_bash_tool() -> Dict[str, Any]:
-        """Bash执行工具定义"""
+        """Bash execution tool definition"""
         return {
             "name": "execute_bash",
             "description": "Execute bash command",
@@ -216,7 +151,7 @@ class MCPToolDefinitions:
 
     @staticmethod
     def _get_file_structure_tool() -> Dict[str, Any]:
-        """文件结构获取工具定义"""
+        """File structure retrieval tool definition"""
         return {
             "name": "get_file_structure",
             "description": "Get directory file structure",
@@ -239,7 +174,7 @@ class MCPToolDefinitions:
 
     @staticmethod
     def _get_search_code_references_tool() -> Dict[str, Any]:
-        """统一代码参考搜索工具定义 - 合并了三个步骤为一个工具"""
+        """Unified code reference search tool definition - combines three steps into one tool"""
         return {
             "name": "search_code_references",
             "description": "UNIFIED TOOL: Search relevant reference code from index files. Combines directory setup, index loading, and searching in a single call.",
@@ -271,7 +206,7 @@ class MCPToolDefinitions:
 
     @staticmethod
     def _get_get_indexes_overview_tool() -> Dict[str, Any]:
-        """获取索引概览工具定义"""
+        """Get index overview tool definition"""
         return {
             "name": "get_indexes_overview",
             "description": "Get overview of all available reference code index information from specified directory",
@@ -326,20 +261,18 @@ class MCPToolDefinitions:
     @staticmethod
     def get_available_tool_sets() -> Dict[str, str]:
         """
-        获取可用的工具集合
         Get available tool sets
         """
         return {
-            "code_implementation": "代码实现相关工具集 / Code implementation tool set",
-            # 可以在这里添加更多工具集
-            # "data_analysis": "数据分析工具集 / Data analysis tool set",
-            # "web_scraping": "网页爬取工具集 / Web scraping tool set",
+            "code_implementation": "Code implementation tool set",
+            # More tool sets can be added here
+            # "data_analysis": "Data analysis tool set",
+            # "web_scraping": "Web scraping tool set",
         }
 
     @staticmethod
     def get_tool_set(tool_set_name: str) -> List[Dict[str, Any]]:
         """
-        根据名称获取特定的工具集
         Get specific tool set by name
         """
         tool_sets = {
@@ -351,7 +284,6 @@ class MCPToolDefinitions:
     @staticmethod
     def get_all_tools() -> List[Dict[str, Any]]:
         """
-        获取所有可用工具
         Get all available tools
         """
         all_tools = []
@@ -360,16 +292,15 @@ class MCPToolDefinitions:
         return all_tools
 
 
-# 便捷访问函数
+# Convenience access functions
 def get_mcp_tools(tool_set: str = "code_implementation") -> List[Dict[str, Any]]:
     """
-    便捷函数：获取MCP工具定义
     Convenience function: Get MCP tool definitions
 
     Args:
-        tool_set: 工具集名称 (默认: "code_implementation")
+        tool_set: Tool set name (default: "code_implementation")
 
     Returns:
-        工具定义列表
+        Tool definition list
     """
     return MCPToolDefinitions.get_tool_set(tool_set)

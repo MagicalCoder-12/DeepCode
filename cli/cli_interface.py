@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Enhanced CLI Interface Module for DeepCode
-增强版CLI界面模块 - 专为DeepCode设计
 """
 
 import os
@@ -628,12 +627,12 @@ class CLIInterface:
         )
 
     def cleanup_cache(self):
-        """清理Python缓存文件 / Clean up Python cache files"""
+        """Clean up Python cache files"""
         try:
             self.print_status("Cleaning up cache files...", "info")
-            # 清理__pycache__目录
+            # Clean __pycache__ directories
             os.system('find . -type d -name "__pycache__" -exec rm -r {} + 2>/dev/null')
-            # 清理.pyc文件
+            # Clean .pyc files
             os.system('find . -name "*.pyc" -delete 2>/dev/null')
             self.print_status("Cache cleanup completed", "success")
         except Exception as e:
@@ -641,7 +640,7 @@ class CLIInterface:
 
     def print_goodbye(self):
         """Print goodbye message"""
-        # 清理缓存文件
+        # Clean cache files
         self.cleanup_cache()
 
         goodbye = f"""

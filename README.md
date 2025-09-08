@@ -16,10 +16,6 @@
 </tr>
 </table>
 
-<div align="center">
-<a href="https://trendshift.io/repositories/14665" target="_blank"><img src="https://trendshift.io/api/badge/repositories/14665" alt="HKUDS%2FDeepCode | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-</div>
-
 <!-- <img src="https://readme-typing-svg.herokuapp.com?font=Russo+One&size=28&duration=2000&pause=800&color=06B6D4&background=00000000&center=true&vCenter=true&width=800&height=50&lines=%E2%9A%A1+OPEN+AGENTIC+CODING+%E2%9A%A1" alt="DeepCode Tech Subtitle" style="margin-top: 5px; filter: drop-shadow(0 0 12px #06B6D4) drop-shadow(0 0 24px rgba(6,182,212,0.4));"/> -->
 
 # <img src="https://github.com/Zongwei9888/Experiment_Images/raw/43c585dca3d21b8e4b6390d835cdd34dc4b4b23d/DeepCode_images/title_logo.svg" alt="DeepCode Logo" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"/> DeepCode: Open Agentic Coding
@@ -447,11 +443,9 @@ Implementation Generation • Testing • Documentation
 
 ## 🚀 Quick Start
 
-
-
 ### 📦 **Step 1: Installation**
 
-#### ⚡ **Direct Installation (Recommended)**
+#### ⚡ **Privacy-First Local Setup (Default Configuration)**
 
 ```bash
 # 🚀 Install DeepCode package directly
@@ -461,21 +455,27 @@ pip install deepcode-hku
 curl -O https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.config.yaml
 curl -O https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.secrets.yaml
 
-# 🔑 Configure API keys (required)
-# Edit mcp_agent.secrets.yaml with your API keys and base_url:
-# - openai: api_key, base_url (for OpenAI/custom endpoints)
-# - anthropic: api_key (for Claude models)
+# 🤖 Local AI Model Setup (100% Privacy)
+# The configuration is already optimized for local development:
+# - Uses gpt-oss:20b model with native tool calling support
+# - All processing happens locally via Ollama
+# - No external API calls or data transmission
+# - Enhanced Windows compatibility and file handling
 
-# 🔑 Configure search API keys for web search (optional)
-# Edit mcp_agent.config.yaml to set your API keys:
-# - For Brave Search: Set BRAVE_API_KEY: "your_key_here" in brave.env section (line ~28)
-# - For Bocha-MCP: Set BOCHA_API_KEY: "your_key_here" in bocha-mcp.env section (line ~74)
-
-# 📄 Configure document segmentation (optional)
-# Edit mcp_agent.config.yaml to control document processing:
-# - enabled: true/false (whether to use intelligent document segmentation)
-# - size_threshold_chars: 50000 (document size threshold to trigger segmentation)
+# 📄 Advanced Configuration (optional)
+# Document segmentation and encoding detection are pre-configured
+# All MCP servers use Python-based implementations for reliability
 ```
+
+#### 🔒 **Privacy & Security Features**
+
+- ✅ **100% Local Processing**: All AI operations run on your machine with Ollama
+- ✅ **Zero External Dependencies**: Complete data privacy and security
+- ✅ **Advanced Local Model**: Uses `gpt-oss:20b` with native tool calling capabilities
+- ✅ **Intelligent File Handling**: Automatic encoding detection and PDF processing
+- ✅ **Cross-Platform Optimized**: Enhanced Windows/Linux/macOS compatibility
+- ✅ **Production Ready**: Full functionality without any cloud dependencies
+- ✅ **Secure by Design**: Your code and data never leave your local environment
 
 #### 🔧 **Development Installation (From Source)**
 
@@ -497,15 +497,11 @@ uv venv --python=3.13
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -r requirements.txt
 
-# 🔑 Configure API keys (required)
-# Edit mcp_agent.secrets.yaml with your API keys and base_url:
-# - openai: api_key, base_url (for OpenAI/custom endpoints)
-# - anthropic: api_key (for Claude models)
-
-# 🔑 Configure search API keys for web search (optional)
-# Edit mcp_agent.config.yaml to set your API keys:
-# - For Brave Search: Set BRAVE_API_KEY: "your_key_here" in brave.env section (line ~28)
-# - For Bocha-MCP: Set BOCHA_API_KEY: "your_key_here" in bocha-mcp.env section (line ~74)
+# 🔑 Local Configuration (already optimized)
+# The configuration files are pre-set for local development:
+# - mcp_agent.secrets.yaml: configured for Ollama local API
+# - mcp_agent.config.yaml: optimized for gpt-oss:20b model
+# - No external API keys required for core functionality
 
 # 📄 Configure document segmentation (optional)
 # Edit mcp_agent.config.yaml to control document processing:
@@ -523,15 +519,11 @@ cd DeepCode/
 # 📦 Install dependencies
 pip install -r requirements.txt
 
-# 🔑 Configure API keys (required)
-# Edit mcp_agent.secrets.yaml with your API keys and base_url:
-# - openai: api_key, base_url (for OpenAI/custom endpoints)
-# - anthropic: api_key (for Claude models)
-
-# 🔑 Configure search API keys for web search (optional)
-# Edit mcp_agent.config.yaml to set your API keys:
-# - For Brave Search: Set BRAVE_API_KEY: "your_key_here" in brave.env section (line ~28)
-# - For Bocha-MCP: Set BOCHA_API_KEY: "your_key_here" in bocha-mcp.env section (line ~74)
+# 🔑 Local Configuration (already optimized)
+# The configuration files are pre-set for local development:
+# - mcp_agent.secrets.yaml: configured for Ollama local API
+# - mcp_agent.config.yaml: optimized for gpt-oss:20b model
+# - No external API keys required for core functionality
 
 # 📄 Configure document segmentation (optional)
 # Edit mcp_agent.config.yaml to control document processing:
@@ -569,46 +561,23 @@ mcp:
 
 > **Note**: Replace the path with your actual global node_modules path from step 2.
 
-#### 🔍 **Search Server Configuration (Optional)**
+#### 🔍 **Local Search & Processing**
 
-DeepCode supports multiple search servers for web search functionality. You can configure your preferred option in `mcp_agent.config.yaml`:
+DeepCode operates with local document processing and repository analysis.
 
-```yaml
-# Default search server configuration
-# Options: "brave" or "bocha-mcp"
-default_search_server: "brave"
+**Built-in Capabilities:**
+- 📄 **Local Document Processing**: PDF, DOCX, TXT, HTML files
+- 🔍 **Repository Analysis**: GitHub repository cloning and indexing
+- 📊 **Code Reference Search**: Intelligent code pattern discovery
+- 🧠 **Knowledge Graph**: Local codebase understanding
+
+**Optional Web Search** (for additional context):
+```bash
+# Optional: Set SERPER_API_KEY for web search enhancement
+export SERPER_API_KEY="your_key_here"  # Optional feature
 ```
 
-**Available Options:**
-- **🔍 Brave Search** (`"brave"`):
-  - Default option with high-quality search results
-  - Requires BRAVE_API_KEY configuration
-  - Recommended for most users
-
-- **🌐 Bocha-MCP** (`"bocha-mcp"`):
-  - Alternative search server option
-  - Requires BOCHA_API_KEY configuration
-  - Uses local Python server implementation
-
-**API Key Configuration in mcp_agent.config.yaml:**
-```yaml
-# For Brave Search (default) - around line 28
-brave:
-  command: "npx"
-  args: ["-y", "@modelcontextprotocol/server-brave-search"]
-  env:
-    BRAVE_API_KEY: "your_brave_api_key_here"
-
-# For Bocha-MCP (alternative) - around line 74
-bocha-mcp:
-  command: "python"
-  args: ["tools/bocha_search_server.py"]
-  env:
-    PYTHONPATH: "."
-    BOCHA_API_KEY: "your_bocha_api_key_here"
-```
-
-> **💡 Tip**: Both search servers require API key configuration. Choose the one that best fits your API access and requirements.
+> **💡 Note**: Web search is optional - DeepCode works fully offline with local processing
 
 ### ⚡ **Step 2: Launch Application**
 

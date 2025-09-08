@@ -300,7 +300,7 @@ class CLIApp:
                         "Invalid choice. Please select U, F, T, C, H, or Q.", "warning"
                     )
 
-                # 询问是否继续
+                # Ask whether to continue
                 if self.cli.is_running and choice in ["u", "f", "t", "chat", "text"]:
                     if not self.cli.ask_continue():
                         self.cli.is_running = False
@@ -311,16 +311,16 @@ class CLIApp:
         except Exception as e:
             print(f"\n{Colors.FAIL}❌ Unexpected error: {str(e)}{Colors.ENDC}")
         finally:
-            # 清理资源
+            # Clean up resources
             await self.cleanup_mcp_app()
 
 
 async def main():
-    """主函数"""
+    """Main function"""
     start_time = time.time()
 
     try:
-        # 创建并运行CLI应用
+        # Create and run CLI application
         app = CLIApp()
         await app.run_interactive_session()
 
@@ -334,7 +334,7 @@ async def main():
             f"\n{Colors.BOLD}{Colors.CYAN}⏱️  Total runtime: {end_time - start_time:.2f} seconds{Colors.ENDC}"
         )
 
-        # 清理缓存文件
+        # Clean up cache files
         print(f"{Colors.YELLOW}🧹 Cleaning up cache files...{Colors.ENDC}")
         if os.name == "nt":  # Windows
             os.system(

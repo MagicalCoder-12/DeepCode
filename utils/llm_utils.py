@@ -158,26 +158,27 @@ def should_use_document_segmentation(
 
 
 def get_adaptive_agent_config(
-    use_segmentation: bool, search_server_names: list = None
+    use_segmentation: bool, base_server_names: list = None
 ) -> Dict[str, list]:
     """
     Get adaptive agent configuration based on whether to use document segmentation.
+    Note: Search functionality now uses direct HTTP calls, not MCP servers.
 
     Args:
         use_segmentation: Whether to include document-segmentation server
-        search_server_names: Base search server names (from get_search_server_names)
+        base_server_names: Base MCP server names (excluding search servers)
 
     Returns:
         Dict containing server configurations for different agents
     """
-    if search_server_names is None:
-        search_server_names = []
+    if base_server_names is None:
+        base_server_names = ["filesystem", "fetch", "github-downloader"]
 
-    # Base configuration
+    # Base configuration (no search servers needed)
     config = {
         "concept_analysis": [],
-        "algorithm_analysis": search_server_names.copy(),
-        "code_planner": search_server_names.copy(),
+        "algorithm_analysis": base_server_names.copy(),
+        "code_planner": base_server_names.copy(),
     }
 
     # Add document-segmentation server if needed
@@ -187,12 +188,6 @@ def get_adaptive_agent_config(
             config["algorithm_analysis"].append("document-segmentation")
         if "document-segmentation" not in config["code_planner"]:
             config["code_planner"].append("document-segmentation")
-    else:
-        config["concept_analysis"] = ["filesystem"]
-        if "filesystem" not in config["algorithm_analysis"]:
-            config["algorithm_analysis"].append("filesystem")
-        if "filesystem" not in config["code_planner"]:
-            config["code_planner"].append("filesystem")
 
     return config
 

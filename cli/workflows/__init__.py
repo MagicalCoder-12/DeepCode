@@ -1,6 +1,6 @@
 """
 CLI-specific Workflow Adapters
-CLI专用工作流适配器
+CLI-specific workflow adapter
 
 This module provides CLI-optimized versions of workflow components that are
 specifically adapted for command-line interface usage patterns.

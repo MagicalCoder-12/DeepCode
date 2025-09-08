@@ -626,15 +626,15 @@ class CodeImplementationAgent:
         if not messages:
             return False
 
-        # Calculate current token count / 计算当前token数
+        # Calculate current token count
         current_token_count = self.calculate_messages_token_count(messages)
 
-        # Check if we should trigger summary / 检查是否应触发总结
+        # Check if we should trigger summary
         should_trigger = (
             current_token_count > self.summary_trigger_tokens
             and current_token_count
             > self.last_summary_token_count
-            + 10000  # Minimum 10k tokens between summaries / 总结间最少10k tokens
+            + 10000  # Minimum 10k tokens between summaries
         )
 
         if should_trigger:
@@ -651,7 +651,6 @@ class CodeImplementationAgent:
     ) -> bool:
         """
         Check if summary should be triggered based on token count (preferred) or file count (fallback)
-        根据token数（首选）或文件数（回退）检查是否应触发总结
 
         Args:
             summary_trigger: Number of files after which to trigger summary (fallback)
@@ -660,11 +659,11 @@ class CodeImplementationAgent:
         Returns:
             True if summary should be triggered
         """
-        # Primary: Token-based triggering / 主要：基于token的触发
+        # Primary: Token-based triggering
         if messages and self.tokenizer:
             return self.should_trigger_summary_by_tokens(messages)
 
-        # Fallback: File-based triggering (original logic) / 回退：基于文件的触发（原始逻辑）
+        # Fallback: File-based triggering (original logic)
         self.logger.info("Using fallback file-based summary triggering")
         should_trigger = (
             self.files_implemented_count > 0
@@ -677,15 +676,14 @@ class CodeImplementationAgent:
     def mark_summary_triggered(self, messages: List[Dict] = None):
         """
         Mark that summary has been triggered for current state
-        标记当前状态的总结已被触发
 
         Args:
             messages: Current conversation messages for token tracking
         """
-        # Update file-based tracking / 更新基于文件的跟踪
+        # Update file-based tracking
         self.last_summary_file_count = self.files_implemented_count
 
-        # Update token-based tracking / 更新基于token的跟踪
+        # Update token-based tracking
         if messages and self.tokenizer:
             self.last_summary_token_count = self.calculate_messages_token_count(
                 messages
@@ -702,21 +700,18 @@ class CodeImplementationAgent:
     def get_implementation_summary(self) -> Dict[str, Any]:
         """
         Get current implementation summary
-        获取当前实现总结
         """
         return self.implementation_summary.copy()
 
     def get_files_implemented_count(self) -> int:
         """
         Get the number of files implemented so far
-        获取到目前为止实现的文件数量
         """
         return self.files_implemented_count
 
     def get_read_tools_status(self) -> Dict[str, Any]:
         """
         Get read tools configuration status
-        获取读取工具配置状态
 
         Returns:
             Dictionary with read tools status information
@@ -731,7 +726,6 @@ class CodeImplementationAgent:
     def add_technical_decision(self, decision: str, context: str = ""):
         """
         Add a technical decision to the implementation summary
-        向实现总结添加技术决策
 
         Args:
             decision: Description of the technical decision
@@ -745,7 +739,6 @@ class CodeImplementationAgent:
     def add_constraint(self, constraint: str, impact: str = ""):
         """
         Add an important constraint to the implementation summary
-        向实现总结添加重要约束
 
         Args:
             constraint: Description of the constraint
@@ -759,7 +752,6 @@ class CodeImplementationAgent:
     def add_architecture_note(self, note: str, component: str = ""):
         """
         Add an architecture note to the implementation summary
-        向实现总结添加架构注释
 
         Args:
             note: Architecture note description
@@ -773,7 +765,6 @@ class CodeImplementationAgent:
     def get_implementation_statistics(self) -> Dict[str, Any]:
         """
         Get comprehensive implementation statistics
-        获取全面的实现统计信息
         """
         return {
             "total_files_implemented": self.files_implemented_count,
@@ -803,7 +794,6 @@ class CodeImplementationAgent:
     def force_enable_optimization(self):
         """
         Force enable optimization for testing purposes
-        强制启用优化用于测试目的
         """
         self.files_implemented_count = 1
         self.logger.info(
@@ -816,7 +806,6 @@ class CodeImplementationAgent:
     def reset_implementation_tracking(self):
         """
         Reset implementation tracking (useful for new sessions)
-        重置实现跟踪（对新会话有用）
         """
         self.implementation_summary = {
             "completed_files": [],
@@ -828,22 +817,21 @@ class CodeImplementationAgent:
         self.files_implemented_count = 0
         self.implemented_files_set = (
             set()
-        )  # Reset the unique files set / 重置唯一文件集合
+        )  # Reset the unique files set
         self.files_read_for_dependencies = (
             set()
-        )  # Reset files read for dependency analysis / 重置为依赖分析而读取的文件
-        self.last_summary_file_count = 0  # Reset the file count when last summary was triggered / 重置上次触发总结时的文件数
-        self.last_summary_token_count = 0  # Reset token count when last summary was triggered / 重置上次触发总结时的token数
+        )  # Reset files read for dependency analysis
+        self.last_summary_file_count = 0  # Reset the file count when last summary was triggered
+        self.last_summary_token_count = 0  # Reset token count when last summary was triggered
         self.logger.info("Implementation tracking reset")
 
-        # Reset analysis loop detection / 重置分析循环检测
+        # Reset analysis loop detection
         self.recent_tool_calls = []
         self.logger.info("Analysis loop detection reset")
 
     def _track_tool_call_for_loop_detection(self, tool_name: str):
         """
         Track tool calls for analysis loop detection
-        跟踪工具调用以检测分析循环
 
         Args:
             tool_name: Name of the tool called
@@ -858,7 +846,6 @@ class CodeImplementationAgent:
     def is_in_analysis_loop(self) -> bool:
         """
         Check if the agent is in an analysis loop (only reading files, not writing)
-        检查代理是否在分析循环中（只读文件，不写文件）
 
         Returns:
             True if in analysis loop
@@ -866,7 +853,7 @@ class CodeImplementationAgent:
         if len(self.recent_tool_calls) < self.max_read_without_write:
             return False
 
-        # Check if recent calls are all read_file or search_reference_code / 检查最近的调用是否都是read_file或search_reference_code
+        # Check if recent calls are all read_file or search_reference_code
         analysis_tools = {
             "read_file",
             "search_reference_code",
@@ -874,7 +861,7 @@ class CodeImplementationAgent:
         }
         recent_calls_set = set(self.recent_tool_calls)
 
-        # If all recent calls are analysis tools, we're in an analysis loop / 如果最近的调用都是分析工具，我们在分析循环中
+        # If all recent calls are analysis tools, we're in an analysis loop
         in_loop = (
             recent_calls_set.issubset(analysis_tools) and len(recent_calls_set) >= 1
         )
@@ -889,7 +876,6 @@ class CodeImplementationAgent:
     def get_analysis_loop_guidance(self) -> str:
         """
         Get guidance to break out of analysis loop
-        获取跳出分析循环的指导
 
         Returns:
             Guidance message to encourage implementation
@@ -913,7 +899,6 @@ class CodeImplementationAgent:
     async def test_summary_functionality(self, test_file_path: str = None):
         """
         Test if the code summary functionality is working correctly
-        测试代码总结功能是否正常工作
 
         Args:
             test_file_path: Specific file to test, if None will test all implemented files
@@ -971,7 +956,6 @@ class CodeImplementationAgent:
     async def test_automatic_read_file_optimization(self):
         """
         Test the automatic read_file optimization that redirects to read_code_mem
-        测试自动read_file优化，重定向到read_code_mem
         """
         print("=" * 80)
         print("🔄 TESTING AUTOMATIC READ_FILE OPTIMIZATION")
@@ -1036,7 +1020,6 @@ class CodeImplementationAgent:
     async def test_summary_optimization(self, test_file_path: str = "config.py"):
         """
         Test the summary optimization functionality with a specific file
-        测试特定文件的总结优化功能
 
         Args:
             test_file_path: File path to test (default: config.py which should be in summary)
@@ -1067,7 +1050,6 @@ class CodeImplementationAgent:
     async def test_read_tools_configuration(self):
         """
         Test the read tools configuration to verify enabling/disabling works correctly
-        测试读取工具配置以验证启用/禁用是否正常工作
         """
         print("=" * 60)
         print("🧪 TESTING READ TOOLS CONFIGURATION")

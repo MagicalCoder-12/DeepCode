@@ -10,12 +10,18 @@ import os
 import traceback
 import atexit
 import signal
+import warnings
 from datetime import datetime
 from typing import Dict, Any
 
 import streamlit as st
 import nest_asyncio
 import concurrent.futures
+
+# Suppress asyncio task warnings for better user experience
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="asyncio")
+warnings.filterwarnings("ignore", message=".*Task was destroyed but it is pending.*")
+warnings.filterwarnings("ignore", message=".*coroutine.*was never awaited.*")
 
 # Import necessary modules
 from mcp_agent.app import MCPApp
@@ -107,7 +113,14 @@ async def process_input_async(
         async with app.run() as agent_app:
             logger = agent_app.logger
             context = agent_app.context
-            context.config.mcp.servers["filesystem"].args.extend([os.getcwd()])
+            
+            # Only configure filesystem server if it exists and is enabled
+            try:
+                if hasattr(context.config.mcp, 'servers') and 'filesystem' in context.config.mcp.servers:
+                    context.config.mcp.servers["filesystem"].args.extend([os.getcwd()])
+            except (AttributeError, KeyError):
+                # filesystem server not available (disabled in our config), continue without it
+                pass
 
             # Initialize progress
             if progress_callback:
@@ -692,18 +705,49 @@ def cleanup_resources():
                         for task in pending_tasks:
                             if not task.cancelled():
                                 task.cancel()
-                        # Wait for task cancellation to complete
+                        # Wait for task cancellation to complete with proper async handling
                         try:
                             if pending_tasks:
-                                # Use timeout to avoid blocking too long
+                                # Create a cleanup coroutine to properly await cancelled tasks
+                                async def cleanup_pending_tasks():
+                                    try:
+                                        await asyncio.gather(*pending_tasks, return_exceptions=True)
+                                    except Exception:
+                                        pass  # Ignore cancellation exceptions
+                                
+                                # Schedule cleanup task to run in the background
+                                cleanup_task = loop.create_task(cleanup_pending_tasks())
+                                
+                                # Give it a brief moment to complete
                                 import time
-
-                                time.sleep(0.1)
+                                time.sleep(0.2)
+                                
+                                # Cancel the cleanup task if it's still running
+                                if not cleanup_task.done():
+                                    cleanup_task.cancel()
                         except Exception:
                             pass
             except RuntimeError:
-                # No running event loop, continue with other cleanup
-                pass
+                # No running event loop, try to get any existing loop
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop and not loop.is_closed():
+                        pending_tasks = [
+                            task for task in asyncio.all_tasks(loop) if not task.done()
+                        ]
+                        if pending_tasks:
+                            for task in pending_tasks:
+                                if not task.cancelled():
+                                    task.cancel()
+                            # For non-running loops, try to run cleanup synchronously
+                            try:
+                                async def cleanup_sync():
+                                    await asyncio.gather(*pending_tasks, return_exceptions=True)
+                                loop.run_until_complete(cleanup_sync())
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
         except Exception:
             pass
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Professional CLI Interface Module
-专业CLI界面模块 - 包含logo、颜色定义和界面组件
 """
 
 import os
@@ -60,7 +59,7 @@ class CLIInterface:
 
     def print_logo(self):
         """Print a beautiful ASCII logo with gradient colors and tech elements"""
-        # 确保每行总共79个字符（不包括颜色代码），边框完美对齐
+        # Ensure each line has exactly 79 characters (excluding color codes) for perfect border alignment
         logo = f"""
 {Colors.CYAN}╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║

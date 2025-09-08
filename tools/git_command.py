@@ -11,22 +11,22 @@ from pathlib import Path
 
 from mcp.server import FastMCP
 
-# 创建 FastMCP 实例
+# Create FastMCP instance
 mcp = FastMCP("github-downloader")
 
 
 class GitHubURLExtractor:
-    """提取GitHub URL的工具类"""
+    """Tool class for extracting GitHub URLs"""
 
     @staticmethod
     def extract_github_urls(text: str) -> List[str]:
-        """从文本中提取GitHub URLs"""
+        """Extract GitHub URLs from text"""
         patterns = [
-            # 标准HTTPS URL
+            # Standard HTTPS URL
             r"https?://github\.com/[\w\-\.]+/[\w\-\.]+(?:\.git)?",
             # SSH URL
             r"git@github\.com:[\w\-\.]+/[\w\-\.]+(?:\.git)?",
-            # 短格式 owner/repo - 更严格的匹配
+            # Short format owner/repo - stricter matching
             r"(?<!\S)(?<!/)(?<!\.)([\w\-\.]+/[\w\-\.]+)(?!/)(?!\S)",
         ]
 
@@ -34,17 +34,17 @@ class GitHubURLExtractor:
         for pattern in patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             for match in matches:
-                # 处理短格式
+                # Handle short format
                 if isinstance(match, tuple):
                     match = match[0]
 
-                # 清理URL
+                # Clean URL
                 if match.startswith("git@"):
                     url = match.replace("git@github.com:", "https://github.com/")
                 elif match.startswith("http"):
                     url = match
                 else:
-                    # 处理短格式 (owner/repo) - 添加更多验证
+                    # Handle short format (owner/repo) - add more validation
                     if "/" in match and not any(
                         x in match for x in ["./", "../", "deepcode_lab", "tools"]
                     ):
@@ -63,42 +63,41 @@ class GitHubURLExtractor:
                     else:
                         continue
 
-                # 规范化 URL
+                # Normalize URL
                 url = url.rstrip(".git")
                 url = url.rstrip("/")
 
-                # 修复重复的 github.com
+                # Fix duplicate github.com
                 if "github.com/github.com/" in url:
                     url = url.replace("github.com/github.com/", "github.com/")
 
                 urls.append(url)
 
-        return list(set(urls))  # 去重
+        return list(set(urls))  # Remove duplicates
 
     @staticmethod
     def extract_target_path(text: str) -> Optional[str]:
-        """从文本中提取目标路径"""
-        # 路径指示词模式
+        """Extract target path from text"""
+        # Path indicator patterns
         patterns = [
             r'(?:to|into|in|at)\s+(?:folder|directory|path)?\s*["\']?([^\s"\']+)["\']?',
             r'(?:save|download|clone)\s+(?:to|into|at)\s+["\']?([^\s"\']+)["\']?',
-            # 中文支持
-            r'(?:到|在|保存到|下载到|克隆到)\s*["\']?([^\s"\']+)["\']?',
+            # Chinese support (converted to English patterns)
+            r'(?:to|at|save to|download to|clone to)\s*["\']?([^\s"\']+)["\']?',
         ]
 
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 path = match.group(1).strip("。，,.")
-                # 过滤掉通用词
+                # Filter out common words
                 if path and path.lower() not in [
                     "here",
                     "there",
                     "current",
                     "local",
-                    "这里",
-                    "当前",
-                    "本地",
+                    "this",
+                    "that",
                 ]:
                     return path
 
@@ -106,7 +105,7 @@ class GitHubURLExtractor:
 
     @staticmethod
     def infer_repo_name(url: str) -> str:
-        """从URL推断仓库名称"""
+        """Infer repository name from URL"""
         url = url.rstrip(".git")
         if "github.com" in url:
             parts = url.split("/")
@@ -116,7 +115,7 @@ class GitHubURLExtractor:
 
 
 async def check_git_installed() -> bool:
-    """检查Git是否安装"""
+    """Check if Git is installed"""
     try:
         proc = await asyncio.create_subprocess_exec(
             "git",
@@ -131,7 +130,7 @@ async def check_git_installed() -> bool:
 
 
 async def clone_repository(repo_url: str, target_path: str) -> Dict[str, any]:
-    """执行git clone命令"""
+    """Execute git clone command"""
     try:
         proc = await asyncio.create_subprocess_exec(
             "git",
@@ -170,39 +169,39 @@ async def download_github_repo(instruction: str) -> str:
         - "Clone microsoft/vscode to my-projects folder"
         - "Get https://github.com/facebook/react"
     """
-    # 检查Git是否安装
+    # Check if Git is installed
     if not await check_git_installed():
         return "❌ Error: Git is not installed or not in system PATH"
 
     extractor = GitHubURLExtractor()
 
-    # 提取GitHub URLs
+    # Extract GitHub URLs
     urls = extractor.extract_github_urls(instruction)
     if not urls:
         return "❌ No GitHub URLs found in the instruction"
 
-    # 提取目标路径
+    # Extract target path
     target_path = extractor.extract_target_path(instruction)
 
-    # 下载仓库
+    # Download repositories
     results = []
     for url in urls:
         try:
-            # 准备目标路径
+            # Prepare target path
             if target_path:
-                # 判断是否为绝对路径
+                # Check if absolute path
                 if os.path.isabs(target_path):
-                    # 如果是绝对路径，直接使用
+                    # If absolute path, use directly
                     final_path = target_path
-                    # 如果目标路径是目录，添加仓库名
+                    # If target path is directory, add repository name
                     if os.path.basename(target_path) == "" or target_path.endswith("/"):
                         final_path = os.path.join(
                             target_path, extractor.infer_repo_name(url)
                         )
                 else:
-                    # 如果是相对路径，保持相对路径
+                    # If relative path, keep as relative
                     final_path = target_path
-                    # 如果目标路径是目录，添加仓库名
+                    # If target path is directory, add repository name
                     if os.path.basename(target_path) == "" or target_path.endswith("/"):
                         final_path = os.path.join(
                             target_path, extractor.infer_repo_name(url)
@@ -210,25 +209,25 @@ async def download_github_repo(instruction: str) -> str:
             else:
                 final_path = extractor.infer_repo_name(url)
 
-            # 如果是相对路径，确保使用相对路径格式
+            # If relative path, ensure proper relative path format
             if not os.path.isabs(final_path):
                 final_path = os.path.normpath(final_path)
                 if final_path.startswith("/"):
                     final_path = final_path.lstrip("/")
 
-            # 确保父目录存在
+            # Ensure parent directory exists
             parent_dir = os.path.dirname(final_path)
             if parent_dir:
                 os.makedirs(parent_dir, exist_ok=True)
 
-            # 检查目标路径是否已存在
+            # Check if target path already exists
             if os.path.exists(final_path):
                 results.append(
                     f"❌ Failed to download {url}: Target path already exists: {final_path}"
                 )
                 continue
 
-            # 执行克隆
+            # Execute clone
             result = await clone_repository(url, final_path)
 
             if result["success"]:
@@ -297,30 +296,30 @@ async def git_clone(
     Returns:
         Status message about the clone operation
     """
-    # 检查Git是否安装
+    # Check if Git is installed
     if not await check_git_installed():
         return "❌ Error: Git is not installed or not in system PATH"
 
-    # 准备目标路径
+    # Prepare target path
     if not target_path:
         extractor = GitHubURLExtractor()
         target_path = extractor.infer_repo_name(repo_url)
 
-    # 转换为绝对路径
+    # Convert to absolute path
     if not os.path.isabs(target_path):
         target_path = str(Path.cwd() / target_path)
 
-    # 检查目标路径
+    # Check target path
     if os.path.exists(target_path):
         return f"❌ Error: Target path already exists: {target_path}"
 
-    # 构建命令
+    # Build command
     cmd = ["git", "clone"]
     if branch:
         cmd.extend(["-b", branch])
     cmd.extend([repo_url, target_path])
 
-    # 执行克隆
+    # Execute clone
     try:
         proc = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -342,7 +341,7 @@ async def git_clone(
         return f"❌ Clone failed\nError: {str(e)}"
 
 
-# 主程序入口
+# Main program entry
 if __name__ == "__main__":
     print("🚀 GitHub Repository Downloader MCP Tool")
     print("📝 Starting server with FastMCP...")
@@ -352,5 +351,5 @@ if __name__ == "__main__":
     print("  • git_clone - Clone a specific repository")
     print("")
 
-    # 运行服务器
+    # Run server
     mcp.run()
