@@ -122,6 +122,25 @@ class PDFConverter:
                     ):
                         continue
 
+            # Try Windows default installation path as fallback
+            if not libreoffice_available and platform.system() == "Windows":
+                windows_soffice_path = r"C:\Program Files\LibreOffice\program\soffice.exe"
+                try:
+                    result = subprocess.run(
+                        [windows_soffice_path, "--version"], **subprocess_kwargs
+                    )
+                    libreoffice_available = True
+                    working_libreoffice_cmd = windows_soffice_path
+                    logging.info(
+                        f"LibreOffice detected at Windows default path: {result.stdout.strip()}"  # type: ignore
+                    )
+                except (
+                    subprocess.CalledProcessError,
+                    FileNotFoundError,
+                    subprocess.TimeoutExpired,
+                ):
+                    pass
+
             if not libreoffice_available:
                 raise RuntimeError(
                     "LibreOffice is required for Office document conversion but was not found.\n"

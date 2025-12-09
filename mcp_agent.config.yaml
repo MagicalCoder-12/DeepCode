@@ -100,10 +100,19 @@ mcp:
       command: python
       env:
         PYTHONPATH: .
-# LLM Provider Priority (选择使用哪个LLM / Choose which LLM to use)
-# Options: "anthropic", "google", "openai"
-# If not set or provider unavailable, will fallback to first available provider
-llm_provider: "google"  # 设置为 "google", "anthropic", 或 "openai"
+# LLM Provider Selection Priority (选择使用哪个LLM / Choose which LLM to use)
+# ================================================================================
+# HOW PROVIDER SELECTION WORKS:
+# 1. If 'llm_provider' is set below, the system tries that provider FIRST
+# 2. If the preferred provider is unavailable (no API key or connection fails),
+#    the system automatically tries other available providers in order:
+#    anthropic -> google -> openai -> openrouter -> ollama
+# 3. This ensures the application always works if ANY provider is configured
+#
+# OPTIONS: "anthropic", "google", "openai", "openrouter", "ollama"
+# EXAMPLE: Set llm_provider: "ollama" to prefer local Ollama models
+# ================================================================================
+llm_provider: "openrouter"  # Set to your preferred provider
 
 openai:
   base_max_tokens: 40000
@@ -122,5 +131,21 @@ google:
 
 anthropic:
   default_model: "claude-sonnet-4.5"
+
+# Configuration for OpenRouter (supports multiple models)
+openrouter:
+  default_model: "google/gemini-2.0-flash-exp:free"  # Free model alternative
+  base_max_tokens: 40000
+  retry_max_tokens: 32768
+
+# Configuration for Ollama (local models)
+# ⚠️  IMPORTANT: Your Ollama model MUST support tool/function calling!
+# ⚠️  Compatible models: llama3.1, llama3.2, qwen2.5, mistral, etc.
+# ⚠️  NOT compatible: older models without tool support
+# Test your model: ollama run <model> "Can you use tools?"
+ollama:
+  default_model: "qwen2.5-coder:7b-instruct-q5_k_m"  # Change to your installed Ollama model with tool support
+  base_max_tokens: 4096
+  retry_max_tokens: 2048
 
 planning_mode: traditional

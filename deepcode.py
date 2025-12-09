@@ -78,6 +78,25 @@ def check_dependencies():
             ):
                 continue
 
+        # Try Windows default installation path as fallback
+        if not libreoffice_found and platform.system() == "Windows":
+            windows_soffice_path = r"C:\Program Files\LibreOffice\program\soffice.exe"
+            try:
+                result = subprocess.run(
+                    [windows_soffice_path, "--version"], **subprocess_kwargs
+                )
+                if result.returncode == 0:
+                    print(
+                        "✅ LibreOffice is installed at default Windows path (for Office document conversion)"
+                    )
+                    libreoffice_found = True
+            except (
+                subprocess.CalledProcessError,
+                FileNotFoundError,
+                subprocess.TimeoutExpired,
+            ):
+                pass
+
         if not libreoffice_found:
             missing_system_deps.append("LibreOffice")
             print("⚠️  LibreOffice not found (Office documents won't convert to PDF)")

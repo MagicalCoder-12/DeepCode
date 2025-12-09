@@ -502,6 +502,8 @@ Requirements:
         anthropic_key = self.api_config.get("anthropic", {}).get("api_key", "")
         openai_key = self.api_config.get("openai", {}).get("api_key", "")
         google_key = self.api_config.get("google", {}).get("api_key", "")
+        openrouter_key = self.api_config.get("openrouter", {}).get("api_key", "")
+        ollama_config = self.api_config.get("ollama", {})
 
         # Read user preference from main config
         preferred_provider = None
@@ -608,11 +610,73 @@ Requirements:
                 self.logger.warning(f"OpenAI API unavailable: {e}")
                 return None
 
+        async def init_openrouter():
+            if not (openrouter_key and openrouter_key.strip()):
+                return None
+            try:
+                from openai import AsyncOpenAI
+
+                openrouter_config = self.api_config.get("openrouter", {})
+                base_url = openrouter_config.get("base_url", "https://openrouter.ai/api/v1")
+
+                client = AsyncOpenAI(api_key=openrouter_key, base_url=base_url)
+                model_name = self.default_models.get("openrouter", "anthropic/claude-sonnet-4.5")
+
+                try:
+                    await client.chat.completions.create(
+                        model=model_name,
+                        max_tokens=20,
+                        messages=[{"role": "user", "content": "test"}],
+                    )
+                except Exception as e:
+                    self.logger.warning(f"OpenRouter test call warning: {e}, but will proceed")
+                
+                self.logger.info(f"Using OpenRouter API with model: {model_name}")
+                return client, "openrouter"
+            except Exception as e:
+                self.logger.warning(f"OpenRouter API unavailable: {e}")
+                return None
+
+        async def init_ollama():
+            try:
+                from openai import AsyncOpenAI
+
+                base_url = ollama_config.get("base_url", "http://localhost:11434/v1")
+                # Ollama doesn't require an API key
+                client = AsyncOpenAI(api_key="ollama", base_url=base_url)
+                model_name = self.default_models.get("ollama", "llama3.2")
+
+                self.logger.info("\n" + "="*80)
+                self.logger.info("⚠️  OLLAMA MODEL REQUIREMENTS:")
+                self.logger.info(f"   Model '{model_name}' MUST support tool/function calling!")
+                self.logger.info("   Compatible: llama3.1, llama3.2, qwen2.5, mistral, etc.")
+                self.logger.info("   NOT compatible: older models without tool support")
+                self.logger.info("   Test: ollama run " + model_name + ' "Can you use tools?"')
+                self.logger.info("="*80 + "\n")
+
+                try:
+                    await client.chat.completions.create(
+                        model=model_name,
+                        max_tokens=20,
+                        messages=[{"role": "user", "content": "test"}],
+                    )
+                except Exception as e:
+                    self.logger.warning(f"Ollama test call failed: {e}")
+                    return None
+                
+                self.logger.info(f"Using Ollama API with model: {model_name}")
+                return client, "ollama"
+            except Exception as e:
+                self.logger.warning(f"Ollama API unavailable: {e}")
+                return None
+
         # Map providers to their init functions
         provider_init_map = {
             "anthropic": init_anthropic,
             "google": init_google,
             "openai": init_openai,
+            "openrouter": init_openrouter,
+            "ollama": init_ollama,
         }
 
         # Try preferred provider first
@@ -648,6 +712,14 @@ Requirements:
                     client, system_message, messages, tools, max_tokens
                 )
             elif client_type == "openai":
+                return await self._call_openai_with_tools(
+                    client, system_message, messages, tools, max_tokens
+                )
+            elif client_type == "openrouter":
+                return await self._call_openai_with_tools(
+                    client, system_message, messages, tools, max_tokens
+                )
+            elif client_type == "ollama":
                 return await self._call_openai_with_tools(
                     client, system_message, messages, tools, max_tokens
                 )

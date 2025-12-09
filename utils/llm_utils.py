@@ -43,6 +43,9 @@ def get_preferred_llm_class(config_path: str = "mcp_agent.secrets.yaml") -> Type
         anthropic_key = secrets.get("anthropic", {}).get("api_key", "").strip()
         google_key = secrets.get("google", {}).get("api_key", "").strip()
         openai_key = secrets.get("openai", {}).get("api_key", "").strip()
+        openrouter_key = secrets.get("openrouter", {}).get("api_key", "").strip()
+        # Ollama doesn't require API key, just check if base_url is configured
+        ollama_base_url = secrets.get("ollama", {}).get("base_url", "").strip()
 
         # Read user preference from main config
         main_config_path = "mcp_agent.config.yaml"
@@ -61,6 +64,8 @@ def get_preferred_llm_class(config_path: str = "mcp_agent.secrets.yaml") -> Type
             ),
             "google": (GoogleAugmentedLLM, google_key, "GoogleAugmentedLLM"),
             "openai": (OpenAIAugmentedLLM, openai_key, "OpenAIAugmentedLLM"),
+            "openrouter": (OpenAIAugmentedLLM, openrouter_key, "OpenAIAugmentedLLM (OpenRouter)"),
+            "ollama": (OpenAIAugmentedLLM, "ollama", "OpenAIAugmentedLLM (Ollama)"),  # Ollama uses dummy key
         }
 
         # Try user's preferred provider first
@@ -149,17 +154,23 @@ def get_default_models(config_path: str = "mcp_agent.config.yaml"):
             anthropic_config = config.get("anthropic") or {}
             openai_config = config.get("openai") or {}
             google_config = config.get("google") or {}
+            openrouter_config = config.get("openrouter") or {}
+            ollama_config = config.get("ollama") or {}
 
             anthropic_model = anthropic_config.get(
                 "default_model", "claude-sonnet-4-20250514"
             )
             openai_model = openai_config.get("default_model", "o3-mini")
             google_model = google_config.get("default_model", "gemini-2.0-flash")
+            openrouter_model = openrouter_config.get("default_model", "anthropic/claude-sonnet-4.5")
+            ollama_model = ollama_config.get("default_model", "llama3.2")
 
             return {
                 "anthropic": anthropic_model,
                 "openai": openai_model,
                 "google": google_model,
+                "openrouter": openrouter_model,
+                "ollama": ollama_model,
             }
         else:
             print(f"Config file {config_path} not found, using default models")
@@ -167,6 +178,8 @@ def get_default_models(config_path: str = "mcp_agent.config.yaml"):
                 "anthropic": "claude-sonnet-4-20250514",
                 "openai": "o3-mini",
                 "google": "gemini-2.0-flash",
+                "openrouter": "anthropic/claude-sonnet-4.5",
+                "ollama": "llama3.2",
             }
 
     except Exception as e:
@@ -175,6 +188,8 @@ def get_default_models(config_path: str = "mcp_agent.config.yaml"):
             "anthropic": "claude-sonnet-4-20250514",
             "openai": "o3-mini",
             "google": "gemini-2.0-flash",
+            "openrouter": "anthropic/claude-sonnet-4.5",
+            "ollama": "llama3.2",
         }
 
 
