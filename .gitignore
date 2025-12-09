@@ -72,3 +72,6 @@ memory-bank/
 .kiro/steering/byterover-rules.md
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
+
+# Secrets - NEVER commit API keys
+mcp_agent.secrets.yaml

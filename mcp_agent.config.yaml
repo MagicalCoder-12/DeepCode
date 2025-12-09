@@ -1,6 +1,7 @@
 $schema: ./schema/mcp-agent.config.schema.json
 anthropic: null
-default_search_server: brave
+# Search server options: serper, brave, bocha-mcp
+default_search_server: serper
 document_segmentation:
   enabled: false
   size_threshold_chars: 50000
@@ -24,20 +25,28 @@ mcp:
       env:
         BOCHA_API_KEY: ''
         PYTHONPATH: .
+    serper:
+      args:
+      - tools/serper_search_server.py
+      command: python
+      description: Serper Google Search MCP server - provides web, news, and image search via Google
+      env:
+        SERPER_API_KEY: ''
+        PYTHONPATH: .
     brave:
       # macos and linux should use this
-      args:
-      - -y
-      - '@modelcontextprotocol/server-brave-search'
-      command: npx
+      # args:
+      # - -y
+      # - '@modelcontextprotocol/server-brave-search'
+      # command: npx
 
       # windows should use this
-      # args:
-      # # please use the correct path for your system
-      # - C:/Users/LEGION/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
-      # command: node
+      args:
+      # please use the correct path for your system
+      - C:/Users/LEGION/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js
+      command: node
       env:
-        BRAVE_API_KEY: ''
+        BRAVE_API_KEY: 'YOUR_BRAVE_API_KEY_HERE'
     filesystem:
       # macos and linux should use this
       args:
@@ -117,13 +126,15 @@ llm_provider: "openrouter"  # Set to your preferred provider
 openai:
   base_max_tokens: 40000
   # default_model: google/gemini-2.5-pro
-  default_model: anthropic/claude-sonnet-4.5
+  default_model: google/gemini-2.0-flash-exp:free
   # default_model: openai/gpt-oss-120b
   # default_model: deepseek/deepseek-v3.2-exp
   # default_model: moonshotai/kimi-k2-thinking
   reasoning_effort: low  # Only for thinking models
   max_tokens_policy: adaptive
   retry_max_tokens: 32768
+  base_url: "https://openrouter.ai/api/v1"  # Use OpenRouter as the default endpoint
+  api_key: ""  # Set via environment variable or mcp_agent.secrets.yaml
 
 # Configuration for Google AI (Gemini)
 google:
